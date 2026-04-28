@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Árvore SAP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-4 bg-stone-50 text-gray-900">
+
+<div id="app" class="flex h-[570px] border border-gray-200 rounded-lg overflow-hidden font-sans bg-white shadow-sm">
+  <div id="tp" class="w-[240px] min-w-[240px] flex flex-col border-r border-gray-200 bg-stone-50">
+    <div id="th" class="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="chk-all" class="w-3 h-3 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer" onchange="toggleAll(this.checked)" title="Selecionar/Desmarcar tudo">
+        <span class="text-xs font-medium text-gray-800">Estrutura</span>
+      </div>
+      <button class="text-[11px] px-2 py-1 rounded border border-gray-300 bg-white cursor-pointer text-gray-800 font-sans hover:bg-gray-100 transition-colors" onclick="addRoot()">+ Conjunto raiz</button>
+    </div>
+    <div id="tsc" class="flex-1 overflow-y-auto py-1">
+      <div class="px-3 py-4 text-[11px] text-gray-500 text-center leading-relaxed">Crie um conjunto raiz para começar.</div>
+    </div>
+  </div>
+  
+  <div id="dp" class="flex-1 flex flex-col overflow-hidden relative bg-white">
+    <div id="de" class="absolute inset-0 flex items-center justify-center text-[11px] text-gray-500 text-center leading-relaxed">Selecione um conjunto na árvore.</div>
+    
+    <div class="absolute inset-0 hidden flex-col overflow-hidden" id="view-detail">
+      <div id="vd-path" class="px-3.5 pt-2 pb-0.5 text-[9px] text-gray-500 leading-relaxed shrink-0"></div>
+      <div id="vd-top" class="px-3.5 pt-2 pb-2.5 border-b border-gray-200 flex items-center gap-2.5 shrink-0">
+        <div id="vd-icon" class="w-[30px] h-[30px] rounded-[7px] shrink-0"></div>
+        <div id="vd-meta" class="flex-1">
+          <div id="vd-type" class="text-[9px] text-gray-500 uppercase tracking-wider"></div>
+          <div id="vd-name" class="text-sm font-medium text-gray-800"></div>
+        </div>
+      </div>
+      <div id="vd-body" class="flex-1 overflow-y-auto px-3.5 py-3 flex flex-col gap-2.5">
+        <div class="flex flex-col gap-1">
+          <div class="text-[9px] text-gray-500 uppercase tracking-wider">Nome</div>
+          <input class="text-xs px-2 py-1.5 rounded-md border border-gray-300 bg-stone-50 text-gray-800 font-sans w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" id="f-name" oninput="upd('name',this.value)">
+        </div>
+        <div class="flex flex-col gap-1">
+          <div class="text-[9px] text-gray-500 uppercase tracking-wider">Local SAP</div>
+          <input class="text-xs px-2 py-1.5 rounded-md border border-gray-300 bg-stone-50 text-gray-800 font-mono w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" id="f-code" oninput="upd('code',this.value)">
+          <div class="text-[9px] text-gray-500 mt-0.5 flex items-center gap-1" id="inh-hint" style="display:none">
+            <div class="w-[5px] h-[5px] rounded-full bg-emerald-600 shrink-0"></div>
+            <span id="inh-text"></span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <div class="text-[9px] text-gray-500 uppercase tracking-wider">Descrição</div>
+          <input class="text-xs px-2 py-1.5 rounded-md border border-gray-300 bg-stone-50 text-gray-800 font-sans w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" id="f-desc" oninput="upd('desc',this.value)">
+        </div>
+        <div id="cs-box"></div>
+      </div>
+      <div id="vd-actions" class="px-3.5 py-2.5 border-t border-gray-200 flex flex-col gap-1.5 shrink-0">
+        <div class="flex gap-1.5" id="ca" style="display:none">
+          <button class="flex-1 py-1.5 px-2 rounded-md text-[11px] cursor-pointer font-sans font-medium text-center transition-all bg-emerald-100 text-emerald-800 border-none hover:bg-emerald-200" onclick="addConjunto()">+ Sub-conjunto</button>
+          <button class="flex-1 py-1.5 px-2 rounded-md text-[11px] cursor-pointer font-sans font-medium text-center transition-all bg-lime-100 text-lime-800 border-none hover:bg-lime-200" onclick="openBatch()">+ TAGs em lote</button>
+        </div>
+        <div class="flex gap-1.5">
+          <button class="flex-1 py-1.5 px-2 rounded-md text-[11px] cursor-pointer font-sans font-medium text-center transition-all bg-red-50 text-red-600 border-none hover:bg-red-100" onclick="deleteSelected()">Remover este item</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="absolute inset-0 hidden flex-col overflow-hidden" id="view-batch">
+      <div id="vb-head" class="px-3.5 py-2.5 border-b border-gray-200 flex items-center gap-2 shrink-0">
+        <button class="text-[11px] px-2 py-1 rounded border border-gray-300 bg-white cursor-pointer text-gray-800 font-sans hover:bg-gray-100 transition-colors" onclick="closeBatch()">← Voltar</button>
+        <span id="vb-head-title" class="text-xs font-medium text-gray-800 flex-1">Adicionar TAGs</span>
+        <span id="vb-step-pill" class="flex gap-1 items-center"></span>
+      </div>
+      <div id="vb-prefix-bar" class="px-3.5 py-2 border-b border-gray-200 flex items-center gap-2 shrink-0 bg-stone-50">
+        <span class="text-[9px] text-gray-500 uppercase tracking-wider">Prefixo</span>
+        <input id="b-prefix" class="text-xs px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-800 font-mono flex-1 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" oninput="updatePreview()" placeholder="301093.FSTI.ATV">
+      </div>
+      <div id="vb-main" class="flex-1 flex overflow-hidden">
+        <div id="vb-paste" class="w-[200px] min-w-[200px] flex flex-col border-r border-gray-200">
+          <div id="vb-paste-label" class="px-2.5 pt-1.5 pb-1 text-[9px] text-gray-500 uppercase tracking-wider shrink-0">Cole as TAGs aqui</div>
+          <textarea id="tag-input" class="flex-1 resize-none border-none outline-none font-mono text-[11px] px-2.5 py-1.5 bg-stone-50 text-gray-800 leading-relaxed placeholder:text-gray-400 placeholder:text-[10px]" spellcheck="false" placeholder="TAG-001&#10;TAG-002&#10;&#10;ou com descrição:&#10;TAG-001;Sensor Temp." oninput="updatePreview()"></textarea>
+          <div id="vb-paste-hint" class="px-2.5 pt-1 pb-1.5 text-[9px] text-gray-400 leading-relaxed shrink-0">Uma por linha. Use ; para TAG;Descrição.</div>
+        </div>
+        <div id="vb-preview" class="flex-1 flex flex-col overflow-hidden">
+          <div id="vb-preview-head" class="grid grid-cols-[24px_1fr_1fr] px-2.5 pt-1.5 pb-1 shrink-0 border-b border-gray-200">
+            <span class="text-[9px] text-gray-500 uppercase tracking-wider">#</span>
+            <span class="text-[9px] text-gray-500 uppercase tracking-wider">Local SAP</span>
+            <span class="text-[9px] text-gray-500 uppercase tracking-wider">TAG</span>
+          </div>
+          <div id="vb-rows" class="flex-1 overflow-y-auto">
+            <div class="p-5 text-[11px] text-gray-400 text-center leading-relaxed">Cole as TAGs ao lado.</div>
+          </div>
+        </div>
+      </div>
+      <div id="vb-footer" class="px-3.5 py-2 border-t border-gray-200 flex gap-2 items-center shrink-0">
+        <div id="vb-summary" class="text-[11px] text-gray-500 flex-1 leading-snug"></div>
+        <button id="vb-confirm" class="px-5 py-1.5 rounded-md text-xs font-medium cursor-pointer border-none bg-emerald-600 text-white font-sans shrink-0 hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors" onclick="confirmBatch()" disabled>Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toolbar" class="flex gap-1.5 mt-2 items-center justify-between flex-wrap">
+  <div class="flex gap-1.5 items-center">
+    <button class="px-3 py-1 rounded-md text-[11px] cursor-pointer border border-gray-300 bg-stone-50 text-gray-800 font-sans hover:bg-gray-200 transition-colors" onclick="expandAll()">Expandir tudo</button>
+    <button class="px-3 py-1 rounded-md text-[11px] cursor-pointer border border-gray-300 bg-stone-50 text-gray-800 font-sans hover:bg-gray-200 transition-colors" onclick="collapseAll()">Recolher tudo</button>
+    <button class="px-3 py-1 rounded-md text-[11px] cursor-pointer border border-gray-300 bg-stone-50 font-sans hover:bg-gray-200 text-red-600 transition-colors" onclick="clearAll()">Limpar tudo</button>
+    
+    <!-- Botão de Remoção em Lote -->
+    <button id="btn-remover-marcados" class="hidden px-3 py-1 rounded-md text-[11px] cursor-pointer bg-red-100 text-red-700 border-none font-medium hover:bg-red-200 transition-colors" onclick="deleteChecked()">Remover marcados (0)</button>
+  </div>
+  <div class="flex gap-1.5">
+    <button class="px-3 py-1 rounded-md text-[11px] cursor-pointer font-sans bg-emerald-700 text-white border-none font-medium flex items-center gap-1.5 hover:bg-emerald-800 disabled:bg-gray-100 disabled:text-gray-400 disabled:border disabled:border-gray-300 disabled:cursor-not-allowed transition-colors" id="export-btn" onclick="exportXLSX()" disabled>
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 10v4h12v-4M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Exportar Excel
+    </button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+let nodes=[], selected=null, collapsed=new Set(), checkedNodes=new Set(), nid=1, batchParsed=[];
+const mkid=()=>nid++;
+
+function getStep(q){return q<=33?3:q<=49?2:1;}
+function toSuf(v){if(v<=99)return String(v).padStart(2,'0');const i=v-100;return String.fromCharCode(65+Math.floor(i/26))+String.fromCharCode(65+(i%26));}
+function genSuffixes(q){const step=getStep(q),out=[];let v=1;for(let i=0;i<q;i++){out.push(toSuf(v));v+=step;}return{out,step};}
+
+function getChildren(pid){return nodes.filter(n=>n.parentId===pid);}
+function getDesc(id){const c=getChildren(id).map(n=>n.id);return[...c,...c.flatMap(getDesc)];}
+function getPath(id){const p=[];let c=nodes.find(n=>n.id===id);while(c){p.unshift(c);c=c.parentId?nodes.find(n=>n.id===c.parentId):null;}return p;}
+function inhPrefix(pid){const p=nodes.find(n=>n.id===pid);return p&&p.code?p.code+'.':'';}
+function mkNode(type,pid=null){return{id:mkid(),type,name:type==='conjunto'?'Novo Conjunto':'Novo Equipamento',code:inhPrefix(pid),desc:'',parentId:pid};}
+function getDepth(id){let d=0,c=nodes.find(n=>n.id===id);while(c&&c.parentId){d++;c=nodes.find(n=>n.id===c.parentId);}return d;}
+
+function addRoot(){const n=mkNode('conjunto',null);n.name='Conjunto Raiz';nodes.push(n);selected=n.id;showDetail();renderTree();updateExportBtn();}
+function addConjunto(){if(!selected)return;const n=mkNode('conjunto',selected);nodes.push(n);collapsed.delete(selected);selected=n.id;showDetail();renderTree();updateExportBtn();}
+function deleteSelected(){if(!selected)return;const toRm=[selected,...getDesc(selected)];const par=nodes.find(n=>n.id===selected)?.parentId||null;nodes=nodes.filter(n=>!toRm.includes(n.id));selected=par;showDetail();renderTree();updateExportBtn();}
+
+// ── DELETAR MARCADOS (MÚLTIPLOS) ─────────────────────────────────
+function toggleAll(checked) {
+  if (checked) {
+    nodes.forEach(n => checkedNodes.add(n.id));
+  } else {
+    checkedNodes.clear();
+  }
+  renderTree();
+}
+
+function deleteChecked() {
+  let toRm = new Set();
+  checkedNodes.forEach(id => {
+    toRm.add(id);
+    getDesc(id).forEach(descId => toRm.add(descId));
+  });
+  
+  nodes = nodes.filter(n => !toRm.has(n.id));
+  checkedNodes.clear();
+  
+  if(selected && toRm.has(selected)) {
+    selected = null;
+  }
+  
+  closeBatch();
+  showDetail();
+  renderTree();
+  updateExportBtn();
+}
+
+function updateToolbar() {
+  const btn = document.getElementById('btn-remover-marcados');
+  if(checkedNodes.size > 0) {
+    btn.classList.remove('hidden');
+    btn.classList.add('inline-flex');
+    btn.textContent = `Remover marcados (${checkedNodes.size})`;
+  } else {
+    btn.classList.add('hidden');
+    btn.classList.remove('inline-flex');
+  }
+  const chkAll = document.getElementById('chk-all');
+  if (chkAll) {
+    chkAll.checked = nodes.length > 0 && checkedNodes.size === nodes.length;
+    chkAll.indeterminate = checkedNodes.size > 0 && checkedNodes.size < nodes.length;
+    chkAll.disabled = nodes.length === 0;
+  }
+}
+// ─────────────────────────────────────────────────────────────────
+
+function clearAll(){nodes=[];selected=null;collapsed=new Set();checkedNodes.clear();showDetail();renderTree();updateExportBtn();}
+function expandAll(){collapsed.clear();renderTree();}
+function collapseAll(){nodes.filter(n=>n.type==='conjunto').forEach(n=>collapsed.add(n.id));renderTree();}
+
+function updateChildCodes(pid) {
+  const p = nodes.find(n => n.id === pid);
+  if(!p) return;
+  getChildren(pid).forEach(c => {
+    const suf = c.code ? c.code.split('.').pop() : '';
+    c.code = p.code ? (suf ? p.code + '.' + suf : p.code) : suf;
+    updateChildCodes(c.id); 
+  });
+}
+
+function upd(f,v){
+  const n=nodes.find(x=>x.id===selected);
+  if(!n)return;
+  n[f]=v;
+  if(f==='name') document.getElementById('vd-name').textContent=v||'(sem nome)';
+  if(f==='code') updateChildCodes(n.id);
+  renderTree();
+}
+
+function updateExportBtn(){document.getElementById('export-btn').disabled=nodes.length===0;}
+
+// ── BATCH ────────────────────────────────────────────────────────
+function parseTags(raw){return raw.split('\n').map(l=>l.trim()).filter(l=>l.length>0).map(l=>{const p=l.split(';');return{tag:p[0].trim(),desc:(p[1]||'').trim()};});}
+
+function openBatch(){
+  const prefix=inhPrefix(selected);
+  document.getElementById('b-prefix').value=prefix.endsWith('.')?prefix.slice(0,-1):prefix;
+  document.getElementById('tag-input').value='';
+  document.getElementById('vb-rows').innerHTML='<div class="p-5 text-[11px] text-gray-400 text-center leading-relaxed">Cole as TAGs ao lado.</div>';
+  document.getElementById('vb-summary').textContent='';
+  document.getElementById('vb-confirm').disabled=true;
+  document.getElementById('vb-step-pill').innerHTML='';
+  const sn=nodes.find(n=>n.id===selected);
+  document.getElementById('vb-head-title').textContent='TAGs → '+(sn?.name||'Conjunto');
+  document.getElementById('view-detail').style.display='none';
+  document.getElementById('view-batch').style.display='flex';
+  document.getElementById('de').style.display='none';
+  document.getElementById('tag-input').focus();
+}
+function closeBatch(){showDetail();}
+
+function updatePreview(){
+  const raw=document.getElementById('tag-input').value;
+  const prefix=(document.getElementById('b-prefix').value||'').trim();
+  batchParsed=parseTags(raw);
+  const q=batchParsed.length;
+  if(q===0){
+    document.getElementById('vb-rows').innerHTML='<div class="p-5 text-[11px] text-gray-400 text-center leading-relaxed">Cole as TAGs ao lado.</div>';
+    document.getElementById('vb-summary').textContent='';
+    document.getElementById('vb-confirm').disabled=true;
+    document.getElementById('vb-step-pill').innerHTML='';
+    return;
+  }
+  const{out,step}=genSuffixes(q);
+  const hasAlpha=out.some(s=>isNaN(+s));
+  // Cores dos badges de passos alinhados ao novo tema
+  const cls=step===3?'bg-emerald-100 text-emerald-800':step===2?'bg-amber-100 text-amber-800':'bg-lime-100 text-lime-800';
+  document.getElementById('vb-step-pill').innerHTML=`<span class="text-[9px] px-2 py-0.5 rounded-full font-medium shrink-0 whitespace-nowrap ${cls}">passo ${step}</span>`+(hasAlpha?'<span class="text-[9px] px-2 py-0.5 rounded-full font-medium shrink-0 whitespace-nowrap bg-purple-100 text-purple-700 ml-1">+ alfa</span>':'');
+  
+  document.getElementById('vb-rows').innerHTML=batchParsed.map((t,i)=>{
+    const code=prefix?prefix+'.'+out[i]:out[i];
+    const disp=t.desc?`${t.tag} <span class="text-gray-400 text-[9px] ml-1">${t.desc}</span>`:t.tag;
+    return `<div class="grid grid-cols-[24px_1fr_1fr] items-center border-b border-gray-200 min-h-[28px] last:border-none">
+              <span class="text-[9px] text-gray-400 text-center tabular-nums">${i+1}</span>
+              <span class="text-[10px] text-emerald-600 font-mono px-1.5 py-1 overflow-hidden text-ellipsis whitespace-nowrap" title="${code}">${code}</span>
+              <span class="text-[11px] text-gray-800 px-1.5 py-1 overflow-hidden text-ellipsis whitespace-nowrap">${disp}</span>
+            </div>`;
+  }).join('');
+  document.getElementById('vb-summary').innerHTML=`<strong class="font-medium text-gray-800">${q}</strong> equipamento${q!==1?'s':''}`;
+  document.getElementById('vb-confirm').disabled=!prefix||q===0;
+  document.getElementById('vb-confirm').textContent=`Confirmar ${q}`;
+}
+
+function confirmBatch(){
+  if(!selected||!batchParsed.length)return;
+  const prefix=(document.getElementById('b-prefix').value||'').trim();
+  if(!prefix)return;
+  const{out}=genSuffixes(batchParsed.length);
+  collapsed.delete(selected);
+  batchParsed.forEach((t,i)=>{const n=mkNode('equipment',selected);n.name=t.tag+(t.desc?' — '+t.desc:'');n.code=prefix+'.'+out[i];nodes.push(n);});
+  batchParsed=[];
+  closeBatch();renderTree();updateExportBtn();
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────
+function flattenAll(){
+  const rows=[];
+  function walk(id){
+    const n=nodes.find(x=>x.id===id);if(!n)return;
+    const depth=getDepth(id);
+    const par=n.parentId?nodes.find(x=>x.id===n.parentId):null;
+    rows.push({
+      'Tipo': n.type==='conjunto'?'Conjunto':'Equipamento',
+      'Nível': depth,
+      'Nome / TAG': n.name,
+      'Local SAP': n.code,
+      'Local Pai': par?.code||'',
+      'Descrição': n.desc
+    });
+    getChildren(id).forEach(c=>walk(c.id));
+  }
+  nodes.filter(n=>!n.parentId).forEach(r=>walk(r.id));
+  return rows;
+}
+
+function exportXLSX(){
+  if(!window.XLSX){console.error('Biblioteca XLSX não carregada'); return;}
+  const wb=XLSX.utils.book_new();
+
+  const allRows=flattenAll();
+  const ws1=XLSX.utils.json_to_sheet(allRows,{header:['Tipo','Nível','Nome / TAG','Local SAP','Local Pai','Descrição']});
+  ws1['!cols']=[{wch:14},{wch:8},{wch:30},{wch:28},{wch:28},{wch:30}];
+  XLSX.utils.book_append_sheet(wb,ws1,'Estrutura Completa');
+
+  const equip=nodes.filter(n=>n.type==='equipment').map(n=>{
+    const par=n.parentId?nodes.find(x=>x.id===n.parentId):null;
+    const[tag,...rest]=n.name.split(' — ');
+    return{
+      'TAG': tag.trim(),
+      'Descrição': rest.join(' — ').trim()||n.desc,
+      'Local SAP': n.code,
+      'Conjunto Pai': par?.name||'',
+      'Local Pai': par?.code||''
+    };
+  });
+  if(equip.length){
+    const ws2=XLSX.utils.json_to_sheet(equip,{header:['TAG','Descrição','Local SAP','Conjunto Pai','Local Pai']});
+    ws2['!cols']=[{wch:22},{wch:30},{wch:28},{wch:24},{wch:28}];
+    XLSX.utils.book_append_sheet(wb,ws2,'Equipamentos');
+  }
+
+  const conj=nodes.filter(n=>n.type==='conjunto').map(n=>{
+    const par=n.parentId?nodes.find(x=>x.id===n.parentId):null;
+    const ch=getChildren(n.id);
+    return{
+      'Conjunto': n.name,
+      'Local SAP': n.code,
+      'Conjunto Pai': par?.name||'',
+      'Local Pai': par?.code||'',
+      'Sub-conjuntos': ch.filter(c=>c.type==='conjunto').length,
+      'Equipamentos': ch.filter(c=>c.type==='equipment').length,
+      'Descrição': n.desc
+    };
+  });
+  if(conj.length){
+    const ws3=XLSX.utils.json_to_sheet(conj,{header:['Conjunto','Local SAP','Conjunto Pai','Local Pai','Sub-conjuntos','Equipamentos','Descrição']});
+    ws3['!cols']=[{wch:24},{wch:22},{wch:22},{wch:22},{wch:14},{wch:14},{wch:30}];
+    XLSX.utils.book_append_sheet(wb,ws3,'Conjuntos');
+  }
+
+  XLSX.writeFile(wb,'sap_estrutura_organizacional.xlsx');
+}
+
+// ── TREE ─────────────────────────────────────────────────────────
+function renderTree(){
+  const existingIds = new Set(nodes.map(n => n.id));
+  for (let id of checkedNodes) {
+    if (!existingIds.has(id)) checkedNodes.delete(id);
+  }
+  updateToolbar();
+
+  const sc=document.getElementById('tsc');
+  const roots=nodes.filter(n=>!n.parentId);
+  if(!roots.length){sc.innerHTML='<div class="px-3 py-4 text-[11px] text-gray-500 text-center leading-relaxed">Crie um conjunto raiz para começar.</div>';return;}
+  const rows=[];
+  function walk(id,depth){
+    const n=nodes.find(x=>x.id===id);if(!n)return;
+    const ch=getChildren(id);const isColl=collapsed.has(id);const isSel=n.id===selected;
+    const indent='<span class="inline-block w-4 shrink-0"></span>'.repeat(depth);
+    const tog=n.type==='conjunto'?`<div class="w-3.5 h-3.5 flex items-center justify-center shrink-0 text-[8px] text-gray-500 rounded-sm hover:text-gray-800" data-toggle="${id}">${ch.length?(isColl?'▶':'▼'):''}</div>`:'<div class="w-3.5 h-3.5 shrink-0"></div>';
+    
+    const chk = `<input type="checkbox" class="w-3 h-3 mx-1 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0" data-chk="${id}" ${checkedNodes.has(id)?'checked':''}>`;
+    
+    // Ícone da Árvore (Verde Esmeralda) ou Ícone da Noz (Âmbar/Marrom)
+    const icon=n.type==='conjunto'?'<div class="w-3.5 h-3.5 flex items-center justify-center shrink-0 mr-1"><div class="w-[11px] h-[11px] rounded-sm bg-emerald-600"></div></div>':'<div class="w-3.5 h-3.5 flex items-center justify-center shrink-0 mr-1"><div class="w-[9px] h-[9px] rounded-full bg-amber-600"></div></div>';
+    const suf=n.code?n.code.split('.').pop():'—';
+    const rowClasses=`tr flex items-center px-1.5 h-7 cursor-pointer select-none hover:bg-stone-100 ${isSel ? 'bg-emerald-50 hover:bg-emerald-100' : ''}`;
+    
+    rows.push(`<div class="${rowClasses}" data-id="${id}">${indent}${tog}${chk}${icon}
+                 <span class="text-[11px] ${isSel ? 'text-emerald-700 font-medium' : 'text-gray-800'} flex-1 overflow-hidden text-ellipsis whitespace-nowrap">${n.name}</span>
+                 <span class="text-[9px] text-gray-500 ml-1 shrink-0 font-mono">${suf}</span>
+               </div>`);
+    if(n.type==='conjunto'&&!isColl)ch.forEach(c=>walk(c.id,depth+1));
+  }
+  roots.forEach(r=>walk(r.id,0));
+  sc.innerHTML=rows.join('');
+  
+  sc.querySelectorAll('.tr').forEach(el=>{
+    el.addEventListener('click',e=>{
+      if(e.target.tagName.toLowerCase() === 'input' && e.target.type === 'checkbox') return;
+      const tog=e.target.closest('[data-toggle]');
+      if(tog){const t=+tog.dataset.toggle;collapsed.has(t)?collapsed.delete(t):collapsed.add(t);renderTree();return;}
+      selected=+el.dataset.id;closeBatch();showDetail();renderTree();
+    });
+  });
+  
+  sc.querySelectorAll('input[type="checkbox"]').forEach(el=>{
+    el.addEventListener('change',e=>{
+      const id = +e.target.dataset.chk;
+      if(e.target.checked) checkedNodes.add(id);
+      else checkedNodes.delete(id);
+      updateToolbar();
+    });
+  });
+}
+
+// ── DETAIL ───────────────────────────────────────────────────────
+function showDetail(){
+  const n=nodes.find(x=>x.id===selected);
+  document.getElementById('de').style.display=n?'none':'flex';
+  document.getElementById('view-detail').style.display=n?'flex':'none';
+  document.getElementById('view-batch').style.display='none';
+  if(!n)return;
+  const path=getPath(n.id);
+  document.getElementById('vd-path').innerHTML=path.map((p,i)=>`<span class="text-[9px] text-gray-500">${p.name}</span>${i<path.length-1?'<span class="opacity-40 text-[9px] mx-1">›</span>':''}`).join('');
+  
+  const ic=document.getElementById('vd-icon');
+  // Ajustando as cores do quadro grande de detalhes
+  ic.style.cssText=n.type==='conjunto'?'width:30px;height:30px;border-radius:7px;background:#059669;flex-shrink:0':'width:30px;height:30px;border-radius:50%;background:#d97706;flex-shrink:0';
+  
+  document.getElementById('vd-type').textContent=n.type==='conjunto'?'Conjunto':'Equipamento';
+  document.getElementById('vd-name').textContent=n.name||'(sem nome)';
+  document.getElementById('f-name').value=n.name;
+  document.getElementById('f-code').value=n.code;
+  document.getElementById('f-desc').value=n.desc;
+  
+  const hint=document.getElementById('inh-hint');
+  if(n.parentId){const par=nodes.find(x=>x.id===n.parentId);if(par?.code){hint.style.display='flex';document.getElementById('inh-text').textContent='Herda de: '+par.code;}else hint.style.display='none';}else hint.style.display='none';
+  
+  document.getElementById('ca').style.display=n.type==='conjunto'?'flex':'none';
+  
+  const csb=document.getElementById('cs-box');
+  if(n.type==='conjunto'){
+    const ch=getChildren(n.id);
+    const sc2=ch.filter(c=>c.type==='conjunto').length;
+    const eq=ch.filter(c=>c.type==='equipment').length;
+    csb.innerHTML=`<div class="text-[11px] text-gray-500 py-1.5 px-2.5 rounded-md bg-stone-50 flex gap-3.5 border border-gray-100">
+                     <div class="flex items-center gap-1"><div class="w-[7px] h-[7px] rounded-sm bg-emerald-600"></div>${sc2} sub-conjunto${sc2!==1?'s':''}</div>
+                     <div class="flex items-center gap-1"><div class="w-[7px] h-[7px] rounded-full bg-amber-600"></div>${eq} equipamento${eq!==1?'s':''}</div>
+                   </div>`;
+  }else{
+    csb.innerHTML='';
+  }
+}
+
+// ── SEED ─────────────────────────────────────────────────────────
+(function(){
+  const r=mkNode('conjunto',null);r.name='Planta São Paulo';r.code='301093';nodes.push(r);
+  const a=mkNode('conjunto',r.id);a.name='FSTI';a.code='301093.FSTI';nodes.push(a);
+  const b=mkNode('conjunto',a.id);b.name='ATV';b.code='301093.FSTI.ATV';nodes.push(b);
+  const{out}=genSuffixes(5);
+  ['SENSOR-TEMP-01','SENSOR-PRESS-01','VALVULA-EV-01','MOTOR-MCC-01','CLP-SIE-01'].forEach((tag,i)=>{
+    const e=mkNode('equipment',b.id);e.name=tag;e.code='301093.FSTI.ATV.'+out[i];nodes.push(e);
+  });
+  const c=mkNode('conjunto',a.id);c.name='HIDR';c.code='301093.FSTI.HIDR';nodes.push(c);
+  selected=b.id;renderTree();showDetail();updateExportBtn();
+})();
+</script>
+</body>
+</html>
