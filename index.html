@@ -2,114 +2,117 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Árvore SAP</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="p-4 bg-stone-50 text-gray-900">
+<body class="p-2 md:p-4 bg-stone-50 text-gray-900 h-screen flex flex-col">
 
-<div id="app" class="flex h-[570px] border border-gray-200 rounded-lg overflow-hidden font-sans bg-white shadow-sm">
-  <div id="tp" class="w-[240px] min-w-[240px] flex flex-col border-r border-gray-200 bg-stone-50">
-    <div id="th" class="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
+<div id="app" class="flex flex-col md:flex-row h-full max-h-[1000px] md:h-[570px] border border-gray-200 rounded-lg overflow-hidden font-sans bg-white shadow-sm flex-1 md:flex-none">
+  <!-- Painel da Árvore (Topo no Mobile, Esquerda no PC) -->
+  <div id="tp" class="w-full md:w-[280px] md:min-w-[280px] h-[45%] md:h-full flex flex-col border-b md:border-b-0 md:border-r border-gray-200 bg-stone-50 shrink-0">
+    <div id="th" class="px-3 py-2.5 md:py-2 border-b border-gray-200 flex items-center justify-between shrink-0">
       <div class="flex items-center gap-2">
-        <input type="checkbox" id="chk-all" class="w-3 h-3 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer" onchange="toggleAll(this.checked)" title="Selecionar/Desmarcar tudo">
-        <span class="text-xs font-medium text-gray-800">Estrutura</span>
+        <input type="checkbox" id="chk-all" class="w-4 h-4 md:w-3 md:h-3 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer" onchange="toggleAll(this.checked)" title="Selecionar/Desmarcar tudo">
+        <span class="text-sm md:text-xs font-medium text-gray-800">Estrutura</span>
       </div>
-      <button class="text-[11px] px-2 py-1 rounded border border-gray-300 bg-white cursor-pointer text-gray-800 font-sans hover:bg-gray-100 transition-colors" onclick="addRoot()">+ Conjunto raiz</button>
+      <button class="text-xs md:text-[11px] px-2.5 py-1.5 md:px-2 md:py-1 rounded border border-gray-300 bg-white cursor-pointer text-gray-800 font-sans hover:bg-gray-100 transition-colors" onclick="addRoot()">+ Conjunto raiz</button>
     </div>
     <div id="tsc" class="flex-1 overflow-y-auto py-1">
-      <div class="px-3 py-4 text-[11px] text-gray-500 text-center leading-relaxed">Crie um conjunto raiz para começar.</div>
+      <div class="px-3 py-4 text-xs md:text-[11px] text-gray-500 text-center leading-relaxed">Crie um conjunto raiz para começar.</div>
     </div>
   </div>
   
-  <div id="dp" class="flex-1 flex flex-col overflow-hidden relative bg-white">
-    <div id="de" class="absolute inset-0 flex items-center justify-center text-[11px] text-gray-500 text-center leading-relaxed">Selecione um conjunto na árvore.</div>
+  <!-- Painel de Detalhes/Batch (Base no Mobile, Direita no PC) -->
+  <div id="dp" class="flex-1 h-[55%] md:h-full flex flex-col overflow-hidden relative bg-white">
+    <div id="de" class="absolute inset-0 flex items-center justify-center text-xs md:text-[11px] text-gray-500 text-center leading-relaxed">Selecione um conjunto na árvore.</div>
     
+    <!-- View: Detalhes -->
     <div class="absolute inset-0 hidden flex-col overflow-hidden" id="view-detail">
-      <div id="vd-path" class="px-3.5 pt-2 pb-0.5 text-[9px] text-gray-500 leading-relaxed shrink-0"></div>
-      <div id="vd-top" class="px-3.5 pt-2 pb-2.5 border-b border-gray-200 flex items-center gap-2.5 shrink-0">
-        <div id="vd-icon" class="w-[30px] h-[30px] rounded-[7px] shrink-0"></div>
+      <div id="vd-path" class="px-3.5 pt-3 md:pt-2 pb-1 md:pb-0.5 text-[10px] md:text-[9px] text-gray-500 leading-relaxed shrink-0"></div>
+      <div id="vd-top" class="px-3.5 pt-2 pb-3 md:pb-2.5 border-b border-gray-200 flex items-center gap-3 md:gap-2.5 shrink-0">
+        <div id="vd-icon" class="w-[36px] h-[36px] md:w-[30px] md:h-[30px] rounded-[8px] md:rounded-[7px] shrink-0 bg-emerald-600"></div>
         <div id="vd-meta" class="flex-1">
-          <div id="vd-type" class="text-[9px] text-gray-500 uppercase tracking-wider"></div>
-          <div id="vd-name" class="text-sm font-medium text-gray-800"></div>
+          <div id="vd-type" class="text-[10px] md:text-[9px] text-gray-500 uppercase tracking-wider"></div>
+          <div id="vd-name" class="text-base md:text-sm font-medium text-gray-800"></div>
         </div>
       </div>
-      <div id="vd-body" class="flex-1 overflow-y-auto px-3.5 py-3 flex flex-col gap-2.5">
-        <div class="flex flex-col gap-1">
-          <div class="text-[9px] text-gray-500 uppercase tracking-wider">Nome</div>
-          <input class="text-xs px-2 py-1.5 rounded-md border border-gray-300 bg-stone-50 text-gray-800 font-sans w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" id="f-name" oninput="upd('name',this.value)">
+      <div id="vd-body" class="flex-1 overflow-y-auto px-3.5 py-4 md:py-3 flex flex-col gap-3 md:gap-2.5">
+        <div class="flex flex-col gap-1.5 md:gap-1">
+          <div class="text-[10px] md:text-[9px] text-gray-500 uppercase tracking-wider">Nome</div>
+          <input class="text-sm md:text-xs px-2.5 md:px-2 py-2 md:py-1.5 rounded-md border border-gray-300 bg-stone-50 text-gray-800 font-sans w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" id="f-name" oninput="upd('name',this.value)">
         </div>
-        <div class="flex flex-col gap-1">
-          <div class="text-[9px] text-gray-500 uppercase tracking-wider">Local SAP</div>
-          <input class="text-xs px-2 py-1.5 rounded-md border border-gray-300 bg-stone-50 text-gray-800 font-mono w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" id="f-code" oninput="upd('code',this.value)">
-          <div class="text-[9px] text-gray-500 mt-0.5 flex items-center gap-1" id="inh-hint" style="display:none">
-            <div class="w-[5px] h-[5px] rounded-full bg-emerald-600 shrink-0"></div>
+        <div class="flex flex-col gap-1.5 md:gap-1">
+          <div class="text-[10px] md:text-[9px] text-gray-500 uppercase tracking-wider">Local SAP</div>
+          <input class="text-sm md:text-xs px-2.5 md:px-2 py-2 md:py-1.5 rounded-md border border-gray-300 bg-stone-50 text-gray-800 font-mono w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" id="f-code" oninput="upd('code',this.value)">
+          <div class="text-[10px] md:text-[9px] text-gray-500 mt-0.5 flex items-center gap-1.5 md:gap-1" id="inh-hint" style="display:none">
+            <div class="w-[6px] h-[6px] md:w-[5px] md:h-[5px] rounded-full bg-emerald-600 shrink-0"></div>
             <span id="inh-text"></span>
           </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <div class="text-[9px] text-gray-500 uppercase tracking-wider">Descrição</div>
-          <input class="text-xs px-2 py-1.5 rounded-md border border-gray-300 bg-stone-50 text-gray-800 font-sans w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" id="f-desc" oninput="upd('desc',this.value)">
+        <div class="flex flex-col gap-1.5 md:gap-1">
+          <div class="text-[10px] md:text-[9px] text-gray-500 uppercase tracking-wider">Descrição</div>
+          <input class="text-sm md:text-xs px-2.5 md:px-2 py-2 md:py-1.5 rounded-md border border-gray-300 bg-stone-50 text-gray-800 font-sans w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" id="f-desc" oninput="upd('desc',this.value)">
         </div>
-        <div id="cs-box"></div>
+        <div id="cs-box" class="mt-1"></div>
       </div>
-      <div id="vd-actions" class="px-3.5 py-2.5 border-t border-gray-200 flex flex-col gap-1.5 shrink-0">
-        <div class="flex gap-1.5" id="ca" style="display:none">
-          <button class="flex-1 py-1.5 px-2 rounded-md text-[11px] cursor-pointer font-sans font-medium text-center transition-all bg-emerald-100 text-emerald-800 border-none hover:bg-emerald-200" onclick="addConjunto()">+ Sub-conjunto</button>
-          <button class="flex-1 py-1.5 px-2 rounded-md text-[11px] cursor-pointer font-sans font-medium text-center transition-all bg-lime-100 text-lime-800 border-none hover:bg-lime-200" onclick="openBatch()">+ TAGs em lote</button>
+      <div id="vd-actions" class="px-3.5 py-3 md:py-2.5 border-t border-gray-200 flex flex-wrap items-center gap-2 md:gap-1.5 shrink-0 bg-white">
+        <div id="ca" style="display:none" class="flex flex-wrap gap-2 md:gap-1.5">
+          <button class="px-3 py-1.5 md:py-1 rounded-md text-xs md:text-[11px] cursor-pointer border border-gray-300 bg-stone-50 text-emerald-700 font-sans hover:bg-gray-200 transition-colors" onclick="addConjunto()">+ Sub-conjunto</button>
+          <button class="px-3 py-1.5 md:py-1 rounded-md text-xs md:text-[11px] cursor-pointer border border-gray-300 bg-stone-50 text-emerald-700 font-sans hover:bg-gray-200 transition-colors" onclick="openBatch()">+ TAGs em lote</button>
         </div>
-        <div class="flex gap-1.5">
-          <button class="flex-1 py-1.5 px-2 rounded-md text-[11px] cursor-pointer font-sans font-medium text-center transition-all bg-red-50 text-red-600 border-none hover:bg-red-100" onclick="deleteSelected()">Remover este item</button>
-        </div>
+        <button class="px-3 py-1.5 md:py-1 rounded-md text-xs md:text-[11px] cursor-pointer border border-gray-300 bg-stone-50 text-red-600 font-sans hover:bg-gray-200 transition-colors" onclick="deleteSelected()">Remover</button>
       </div>
     </div>
     
+    <!-- View: Lote (Batch) -->
     <div class="absolute inset-0 hidden flex-col overflow-hidden" id="view-batch">
-      <div id="vb-head" class="px-3.5 py-2.5 border-b border-gray-200 flex items-center gap-2 shrink-0">
-        <button class="text-[11px] px-2 py-1 rounded border border-gray-300 bg-white cursor-pointer text-gray-800 font-sans hover:bg-gray-100 transition-colors" onclick="closeBatch()">← Voltar</button>
-        <span id="vb-head-title" class="text-xs font-medium text-gray-800 flex-1">Adicionar TAGs</span>
+      <div id="vb-head" class="px-3.5 py-3 md:py-2.5 border-b border-gray-200 flex flex-wrap items-center gap-2 shrink-0">
+        <button class="text-xs md:text-[11px] px-3 py-1.5 md:px-2 md:py-1 rounded border border-gray-300 bg-white cursor-pointer text-gray-800 font-sans hover:bg-gray-100 transition-colors" onclick="closeBatch()">← Voltar</button>
+        <span id="vb-head-title" class="text-sm md:text-xs font-medium text-gray-800 flex-1 truncate">Adicionar TAGs</span>
         <span id="vb-step-pill" class="flex gap-1 items-center"></span>
       </div>
-      <div id="vb-prefix-bar" class="px-3.5 py-2 border-b border-gray-200 flex items-center gap-2 shrink-0 bg-stone-50">
-        <span class="text-[9px] text-gray-500 uppercase tracking-wider">Prefixo</span>
-        <input id="b-prefix" class="text-xs px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-800 font-mono flex-1 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" oninput="updatePreview()" placeholder="301093.FSTI.ATV">
+      <div id="vb-prefix-bar" class="px-3.5 py-2.5 md:py-2 border-b border-gray-200 flex flex-wrap items-center gap-2 shrink-0 bg-stone-50">
+        <span class="text-[10px] md:text-[9px] text-gray-500 uppercase tracking-wider w-full md:w-auto">Prefixo</span>
+        <input id="b-prefix" class="text-sm md:text-xs px-2.5 py-1.5 md:px-2 md:py-1 rounded-md border border-gray-300 bg-white text-gray-800 font-mono w-full md:flex-1 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" oninput="updatePreview()" placeholder="301093.FSTI.ATV">
       </div>
-      <div id="vb-main" class="flex-1 flex overflow-hidden">
-        <div id="vb-paste" class="w-[200px] min-w-[200px] flex flex-col border-r border-gray-200">
-          <div id="vb-paste-label" class="px-2.5 pt-1.5 pb-1 text-[9px] text-gray-500 uppercase tracking-wider shrink-0">Cole as TAGs aqui</div>
-          <textarea id="tag-input" class="flex-1 resize-none border-none outline-none font-mono text-[11px] px-2.5 py-1.5 bg-stone-50 text-gray-800 leading-relaxed placeholder:text-gray-400 placeholder:text-[10px]" spellcheck="false" placeholder="TAG-001&#10;TAG-002&#10;&#10;ou com descrição:&#10;TAG-001;Sensor Temp." oninput="updatePreview()"></textarea>
-          <div id="vb-paste-hint" class="px-2.5 pt-1 pb-1.5 text-[9px] text-gray-400 leading-relaxed shrink-0">Uma por linha. Use ; para TAG;Descrição.</div>
+      <div id="vb-main" class="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
+        <div id="vb-paste" class="w-full md:w-[220px] md:min-w-[220px] h-[120px] md:h-auto flex flex-col border-b md:border-b-0 md:border-r border-gray-200 shrink-0">
+          <div id="vb-paste-label" class="px-3 md:px-2.5 pt-2 md:pt-1.5 pb-1 text-[10px] md:text-[9px] text-gray-500 uppercase tracking-wider shrink-0">Cole as TAGs aqui</div>
+          <textarea id="tag-input" class="flex-1 resize-none border-none outline-none font-mono text-xs md:text-[11px] px-3 md:px-2.5 py-2 md:py-1.5 bg-stone-50 text-gray-800 leading-relaxed placeholder:text-gray-400 placeholder:text-[10px]" spellcheck="false" placeholder="TAG-001&#10;TAG-002&#10;&#10;ou com descrição:&#10;TAG-001;Sensor Temp." oninput="updatePreview()"></textarea>
+          <div id="vb-paste-hint" class="px-3 md:px-2.5 pt-1 pb-2 md:pb-1.5 text-[10px] md:text-[9px] text-gray-400 leading-relaxed shrink-0 hidden md:block">Uma por linha. Use ; para TAG;Descrição.</div>
         </div>
         <div id="vb-preview" class="flex-1 flex flex-col overflow-hidden">
-          <div id="vb-preview-head" class="grid grid-cols-[24px_1fr_1fr] px-2.5 pt-1.5 pb-1 shrink-0 border-b border-gray-200">
-            <span class="text-[9px] text-gray-500 uppercase tracking-wider">#</span>
-            <span class="text-[9px] text-gray-500 uppercase tracking-wider">Local SAP</span>
-            <span class="text-[9px] text-gray-500 uppercase tracking-wider">TAG</span>
+          <div id="vb-preview-head" class="grid grid-cols-[30px_1fr_1fr] md:grid-cols-[24px_1fr_1fr] px-3 md:px-2.5 pt-2 md:pt-1.5 pb-1 shrink-0 border-b border-gray-200">
+            <span class="text-[10px] md:text-[9px] text-gray-500 uppercase tracking-wider text-center">#</span>
+            <span class="text-[10px] md:text-[9px] text-gray-500 uppercase tracking-wider">Local SAP</span>
+            <span class="text-[10px] md:text-[9px] text-gray-500 uppercase tracking-wider">TAG</span>
           </div>
           <div id="vb-rows" class="flex-1 overflow-y-auto">
-            <div class="p-5 text-[11px] text-gray-400 text-center leading-relaxed">Cole as TAGs ao lado.</div>
+            <div class="p-5 text-xs md:text-[11px] text-gray-400 text-center leading-relaxed">Cole as TAGs ao lado.</div>
           </div>
         </div>
       </div>
-      <div id="vb-footer" class="px-3.5 py-2 border-t border-gray-200 flex gap-2 items-center shrink-0">
-        <div id="vb-summary" class="text-[11px] text-gray-500 flex-1 leading-snug"></div>
-        <button id="vb-confirm" class="px-5 py-1.5 rounded-md text-xs font-medium cursor-pointer border-none bg-emerald-600 text-white font-sans shrink-0 hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors" onclick="confirmBatch()" disabled>Confirmar</button>
+      <div id="vb-footer" class="px-3.5 py-3 md:py-2 border-t border-gray-200 flex flex-wrap gap-3 md:gap-2 items-center shrink-0">
+        <div id="vb-summary" class="text-xs md:text-[11px] text-gray-500 flex-1 leading-snug w-full md:w-auto text-center md:text-left"></div>
+        <button id="vb-confirm" class="w-full md:w-auto px-5 py-2.5 md:py-1.5 rounded-md text-sm md:text-xs font-medium cursor-pointer border-none bg-emerald-600 text-white font-sans shrink-0 hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors" onclick="confirmBatch()" disabled>Confirmar</button>
       </div>
     </div>
   </div>
 </div>
 
-<div id="toolbar" class="flex gap-1.5 mt-2 items-center justify-between flex-wrap">
-  <div class="flex gap-1.5 items-center">
-    <button class="px-3 py-1 rounded-md text-[11px] cursor-pointer border border-gray-300 bg-stone-50 text-gray-800 font-sans hover:bg-gray-200 transition-colors" onclick="expandAll()">Expandir tudo</button>
-    <button class="px-3 py-1 rounded-md text-[11px] cursor-pointer border border-gray-300 bg-stone-50 text-gray-800 font-sans hover:bg-gray-200 transition-colors" onclick="collapseAll()">Recolher tudo</button>
-    <button class="px-3 py-1 rounded-md text-[11px] cursor-pointer border border-gray-300 bg-stone-50 font-sans hover:bg-gray-200 text-red-600 transition-colors" onclick="clearAll()">Limpar tudo</button>
+<!-- Toolbar (Mobile: Stacked/Wrapped, PC: Linha Única) -->
+<div id="toolbar" class="flex flex-col md:flex-row gap-2 mt-3 items-center justify-between shrink-0 mb-4 md:mb-0">
+  <div class="flex flex-wrap gap-2 items-center justify-center w-full md:w-auto">
+    <button class="px-3 py-1.5 md:py-1 rounded-md text-xs md:text-[11px] cursor-pointer border border-gray-300 bg-stone-50 text-gray-800 font-sans hover:bg-gray-200 transition-colors" onclick="expandAll()">Expandir tudo</button>
+    <button class="px-3 py-1.5 md:py-1 rounded-md text-xs md:text-[11px] cursor-pointer border border-gray-300 bg-stone-50 text-gray-800 font-sans hover:bg-gray-200 transition-colors" onclick="collapseAll()">Recolher tudo</button>
+    <button class="px-3 py-1.5 md:py-1 rounded-md text-xs md:text-[11px] cursor-pointer border border-gray-300 bg-stone-50 font-sans hover:bg-gray-200 text-red-600 transition-colors" onclick="clearAll()">Limpar tudo</button>
     
-    <!-- Botão de Remoção em Lote -->
-    <button id="btn-remover-marcados" class="hidden px-3 py-1 rounded-md text-[11px] cursor-pointer bg-red-100 text-red-700 border-none font-medium hover:bg-red-200 transition-colors" onclick="deleteChecked()">Remover marcados (0)</button>
+    <button id="btn-remover-marcados" class="hidden px-3 py-1.5 md:py-1 rounded-md text-xs md:text-[11px] cursor-pointer bg-red-100 text-red-700 border-none font-medium hover:bg-red-200 transition-colors w-full md:w-auto mt-1 md:mt-0" onclick="deleteChecked()">Remover marcados (0)</button>
   </div>
-  <div class="flex gap-1.5">
-    <button class="px-3 py-1 rounded-md text-[11px] cursor-pointer font-sans bg-emerald-700 text-white border-none font-medium flex items-center gap-1.5 hover:bg-emerald-800 disabled:bg-gray-100 disabled:text-gray-400 disabled:border disabled:border-gray-300 disabled:cursor-not-allowed transition-colors" id="export-btn" onclick="exportXLSX()" disabled>
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 10v4h12v-4M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="flex gap-1.5 w-full md:w-auto mt-1 md:mt-0">
+    <button class="w-full md:w-auto justify-center px-4 md:px-3 py-2 md:py-1 rounded-md text-xs md:text-[11px] cursor-pointer font-sans bg-emerald-700 text-white border-none font-medium flex items-center gap-2 md:gap-1.5 hover:bg-emerald-800 disabled:bg-gray-100 disabled:text-gray-400 disabled:border disabled:border-gray-300 disabled:cursor-not-allowed transition-colors" id="export-btn" onclick="exportXLSX()" disabled>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 10v4h12v-4M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Exportar Excel
     </button>
   </div>
@@ -135,7 +138,6 @@ function addRoot(){const n=mkNode('conjunto',null);n.name='Conjunto Raiz';nodes.
 function addConjunto(){if(!selected)return;const n=mkNode('conjunto',selected);nodes.push(n);collapsed.delete(selected);selected=n.id;showDetail();renderTree();updateExportBtn();}
 function deleteSelected(){if(!selected)return;const toRm=[selected,...getDesc(selected)];const par=nodes.find(n=>n.id===selected)?.parentId||null;nodes=nodes.filter(n=>!toRm.includes(n.id));selected=par;showDetail();renderTree();updateExportBtn();}
 
-// ── DELETAR MARCADOS (MÚLTIPLOS) ─────────────────────────────────
 function toggleAll(checked) {
   if (checked) {
     nodes.forEach(n => checkedNodes.add(n.id));
@@ -182,7 +184,6 @@ function updateToolbar() {
     chkAll.disabled = nodes.length === 0;
   }
 }
-// ─────────────────────────────────────────────────────────────────
 
 function clearAll(){nodes=[];selected=null;collapsed=new Set();checkedNodes.clear();showDetail();renderTree();updateExportBtn();}
 function expandAll(){collapsed.clear();renderTree();}
@@ -216,7 +217,7 @@ function openBatch(){
   const prefix=inhPrefix(selected);
   document.getElementById('b-prefix').value=prefix.endsWith('.')?prefix.slice(0,-1):prefix;
   document.getElementById('tag-input').value='';
-  document.getElementById('vb-rows').innerHTML='<div class="p-5 text-[11px] text-gray-400 text-center leading-relaxed">Cole as TAGs ao lado.</div>';
+  document.getElementById('vb-rows').innerHTML='<div class="p-5 text-xs md:text-[11px] text-gray-400 text-center leading-relaxed">Cole as TAGs ao lado.</div>';
   document.getElementById('vb-summary').textContent='';
   document.getElementById('vb-confirm').disabled=true;
   document.getElementById('vb-step-pill').innerHTML='';
@@ -235,7 +236,7 @@ function updatePreview(){
   batchParsed=parseTags(raw);
   const q=batchParsed.length;
   if(q===0){
-    document.getElementById('vb-rows').innerHTML='<div class="p-5 text-[11px] text-gray-400 text-center leading-relaxed">Cole as TAGs ao lado.</div>';
+    document.getElementById('vb-rows').innerHTML='<div class="p-5 text-xs md:text-[11px] text-gray-400 text-center leading-relaxed">Cole as TAGs ao lado.</div>';
     document.getElementById('vb-summary').textContent='';
     document.getElementById('vb-confirm').disabled=true;
     document.getElementById('vb-step-pill').innerHTML='';
@@ -243,17 +244,16 @@ function updatePreview(){
   }
   const{out,step}=genSuffixes(q);
   const hasAlpha=out.some(s=>isNaN(+s));
-  // Cores dos badges de passos alinhados ao novo tema
   const cls=step===3?'bg-emerald-100 text-emerald-800':step===2?'bg-amber-100 text-amber-800':'bg-lime-100 text-lime-800';
-  document.getElementById('vb-step-pill').innerHTML=`<span class="text-[9px] px-2 py-0.5 rounded-full font-medium shrink-0 whitespace-nowrap ${cls}">passo ${step}</span>`+(hasAlpha?'<span class="text-[9px] px-2 py-0.5 rounded-full font-medium shrink-0 whitespace-nowrap bg-purple-100 text-purple-700 ml-1">+ alfa</span>':'');
+  document.getElementById('vb-step-pill').innerHTML=`<span class="text-[10px] md:text-[9px] px-2 py-0.5 rounded-full font-medium shrink-0 whitespace-nowrap ${cls}">passo ${step}</span>`+(hasAlpha?'<span class="text-[10px] md:text-[9px] px-2 py-0.5 rounded-full font-medium shrink-0 whitespace-nowrap bg-purple-100 text-purple-700 ml-1">+ alfa</span>':'');
   
   document.getElementById('vb-rows').innerHTML=batchParsed.map((t,i)=>{
     const code=prefix?prefix+'.'+out[i]:out[i];
-    const disp=t.desc?`${t.tag} <span class="text-gray-400 text-[9px] ml-1">${t.desc}</span>`:t.tag;
-    return `<div class="grid grid-cols-[24px_1fr_1fr] items-center border-b border-gray-200 min-h-[28px] last:border-none">
-              <span class="text-[9px] text-gray-400 text-center tabular-nums">${i+1}</span>
-              <span class="text-[10px] text-emerald-600 font-mono px-1.5 py-1 overflow-hidden text-ellipsis whitespace-nowrap" title="${code}">${code}</span>
-              <span class="text-[11px] text-gray-800 px-1.5 py-1 overflow-hidden text-ellipsis whitespace-nowrap">${disp}</span>
+    const disp=t.desc?`${t.tag} <span class="text-gray-400 text-[10px] md:text-[9px] ml-1">${t.desc}</span>`:t.tag;
+    return `<div class="grid grid-cols-[30px_1fr_1fr] md:grid-cols-[24px_1fr_1fr] items-center border-b border-gray-200 min-h-[36px] md:min-h-[28px] last:border-none">
+              <span class="text-[10px] md:text-[9px] text-gray-400 text-center tabular-nums">${i+1}</span>
+              <span class="text-xs md:text-[10px] text-emerald-600 font-mono px-2 md:px-1.5 py-1 overflow-hidden text-ellipsis whitespace-nowrap" title="${code}">${code}</span>
+              <span class="text-sm md:text-[11px] text-gray-800 px-2 md:px-1.5 py-1 overflow-hidden text-ellipsis whitespace-nowrap">${disp}</span>
             </div>`;
   }).join('');
   document.getElementById('vb-summary').innerHTML=`<strong class="font-medium text-gray-800">${q}</strong> equipamento${q!==1?'s':''}`;
@@ -351,24 +351,30 @@ function renderTree(){
 
   const sc=document.getElementById('tsc');
   const roots=nodes.filter(n=>!n.parentId);
-  if(!roots.length){sc.innerHTML='<div class="px-3 py-4 text-[11px] text-gray-500 text-center leading-relaxed">Crie um conjunto raiz para começar.</div>';return;}
+  if(!roots.length){sc.innerHTML='<div class="px-3 py-4 text-xs md:text-[11px] text-gray-500 text-center leading-relaxed">Crie um conjunto raiz para começar.</div>';return;}
   const rows=[];
   function walk(id,depth){
     const n=nodes.find(x=>x.id===id);if(!n)return;
     const ch=getChildren(id);const isColl=collapsed.has(id);const isSel=n.id===selected;
-    const indent='<span class="inline-block w-4 shrink-0"></span>'.repeat(depth);
-    const tog=n.type==='conjunto'?`<div class="w-3.5 h-3.5 flex items-center justify-center shrink-0 text-[8px] text-gray-500 rounded-sm hover:text-gray-800" data-toggle="${id}">${ch.length?(isColl?'▶':'▼'):''}</div>`:'<div class="w-3.5 h-3.5 shrink-0"></div>';
     
-    const chk = `<input type="checkbox" class="w-3 h-3 mx-1 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0" data-chk="${id}" ${checkedNodes.has(id)?'checked':''}>`;
+    // Espaçamento de nível da árvore adaptado para celular e desktop
+    const indent='<span class="inline-block w-4 md:w-3.5 shrink-0"></span>'.repeat(depth);
     
-    // Ícone da Árvore (Verde Esmeralda) ou Ícone da Noz (Âmbar/Marrom)
-    const icon=n.type==='conjunto'?'<div class="w-3.5 h-3.5 flex items-center justify-center shrink-0 mr-1"><div class="w-[11px] h-[11px] rounded-sm bg-emerald-600"></div></div>':'<div class="w-3.5 h-3.5 flex items-center justify-center shrink-0 mr-1"><div class="w-[9px] h-[9px] rounded-full bg-amber-600"></div></div>';
+    const tog=n.type==='conjunto'?`<div class="w-6 h-6 md:w-3.5 md:h-3.5 flex items-center justify-center shrink-0 text-[10px] md:text-[8px] text-gray-500 rounded-sm hover:text-gray-800" data-toggle="${id}">${ch.length?(isColl?'▶':'▼'):''}</div>`:'<div class="w-6 h-6 md:w-3.5 md:h-3.5 shrink-0"></div>';
+    
+    // Checkbox maior no mobile
+    const chk = `<input type="checkbox" class="w-4 h-4 md:w-3 md:h-3 mx-1.5 md:mx-1 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0" data-chk="${id}" ${checkedNodes.has(id)?'checked':''}>`;
+    
+    // Ícones ligeiramente maiores no mobile
+    const icon=n.type==='conjunto'?'<div class="w-5 h-5 md:w-3.5 md:h-3.5 flex items-center justify-center shrink-0 mr-1.5 md:mr-1"><div class="w-[14px] h-[14px] md:w-[11px] md:h-[11px] rounded-[3px] bg-emerald-600"></div></div>':'<div class="w-5 h-5 md:w-3.5 md:h-3.5 flex items-center justify-center shrink-0 mr-1.5 md:mr-1"><div class="w-[12px] h-[12px] md:w-[9px] md:h-[9px] rounded-full bg-amber-600"></div></div>';
+    
     const suf=n.code?n.code.split('.').pop():'—';
-    const rowClasses=`tr flex items-center px-1.5 h-7 cursor-pointer select-none hover:bg-stone-100 ${isSel ? 'bg-emerald-50 hover:bg-emerald-100' : ''}`;
+    // Altura da linha alterada (h-10 para toque suave no celular)
+    const rowClasses=`tr flex items-center px-2 md:px-1.5 h-10 md:h-7 cursor-pointer select-none hover:bg-stone-100 ${isSel ? 'bg-emerald-50 hover:bg-emerald-100' : ''}`;
     
     rows.push(`<div class="${rowClasses}" data-id="${id}">${indent}${tog}${chk}${icon}
-                 <span class="text-[11px] ${isSel ? 'text-emerald-700 font-medium' : 'text-gray-800'} flex-1 overflow-hidden text-ellipsis whitespace-nowrap">${n.name}</span>
-                 <span class="text-[9px] text-gray-500 ml-1 shrink-0 font-mono">${suf}</span>
+                 <span class="text-sm md:text-[11px] ${isSel ? 'text-emerald-700 font-medium' : 'text-gray-800'} flex-1 overflow-hidden text-ellipsis whitespace-nowrap">${n.name}</span>
+                 <span class="text-[10px] md:text-[9px] text-gray-500 ml-1.5 md:ml-1 shrink-0 font-mono">${suf}</span>
                </div>`);
     if(n.type==='conjunto'&&!isColl)ch.forEach(c=>walk(c.id,depth+1));
   }
@@ -402,11 +408,15 @@ function showDetail(){
   document.getElementById('view-batch').style.display='none';
   if(!n)return;
   const path=getPath(n.id);
-  document.getElementById('vd-path').innerHTML=path.map((p,i)=>`<span class="text-[9px] text-gray-500">${p.name}</span>${i<path.length-1?'<span class="opacity-40 text-[9px] mx-1">›</span>':''}`).join('');
+  document.getElementById('vd-path').innerHTML=path.map((p,i)=>`<span class="text-[10px] md:text-[9px] text-gray-500">${p.name}</span>${i<path.length-1?'<span class="opacity-40 text-[10px] md:text-[9px] mx-1">›</span>':''}`).join('');
   
   const ic=document.getElementById('vd-icon');
-  // Ajustando as cores do quadro grande de detalhes
-  ic.style.cssText=n.type==='conjunto'?'width:30px;height:30px;border-radius:7px;background:#059669;flex-shrink:0':'width:30px;height:30px;border-radius:50%;background:#d97706;flex-shrink:0';
+  
+  // Limpando o style.cssText e usando apenas as classes do Tailwind!
+  ic.style.cssText = '';
+  ic.className = n.type === 'conjunto' 
+      ? 'w-[36px] h-[36px] md:w-[30px] md:h-[30px] rounded-[8px] md:rounded-[7px] shrink-0 bg-emerald-600'
+      : 'w-[36px] h-[36px] md:w-[30px] md:h-[30px] rounded-full shrink-0 bg-amber-600';
   
   document.getElementById('vd-type').textContent=n.type==='conjunto'?'Conjunto':'Equipamento';
   document.getElementById('vd-name').textContent=n.name||'(sem nome)';
@@ -424,9 +434,9 @@ function showDetail(){
     const ch=getChildren(n.id);
     const sc2=ch.filter(c=>c.type==='conjunto').length;
     const eq=ch.filter(c=>c.type==='equipment').length;
-    csb.innerHTML=`<div class="text-[11px] text-gray-500 py-1.5 px-2.5 rounded-md bg-stone-50 flex gap-3.5 border border-gray-100">
-                     <div class="flex items-center gap-1"><div class="w-[7px] h-[7px] rounded-sm bg-emerald-600"></div>${sc2} sub-conjunto${sc2!==1?'s':''}</div>
-                     <div class="flex items-center gap-1"><div class="w-[7px] h-[7px] rounded-full bg-amber-600"></div>${eq} equipamento${eq!==1?'s':''}</div>
+    csb.innerHTML=`<div class="text-xs md:text-[11px] text-gray-500 py-2.5 md:py-1.5 px-3 md:px-2.5 rounded-md bg-stone-50 flex gap-4 md:gap-3.5 border border-gray-100">
+                     <div class="flex items-center gap-1.5 md:gap-1"><div class="w-[8px] h-[8px] md:w-[7px] md:h-[7px] rounded-sm bg-emerald-600"></div>${sc2} sub-conjunto${sc2!==1?'s':''}</div>
+                     <div class="flex items-center gap-1.5 md:gap-1"><div class="w-[8px] h-[8px] md:w-[7px] md:h-[7px] rounded-full bg-amber-600"></div>${eq} equipamento${eq!==1?'s':''}</div>
                    </div>`;
   }else{
     csb.innerHTML='';
